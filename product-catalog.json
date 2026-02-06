@@ -1,0 +1,6 @@
+[
+  { "id": "prod_001", "name": "Widget A", "price": 10, "currency": "MURALUSD" },
+  { "id": "prod_002", "name": "Widget B", "price": 25, "currency": "MURALUSD" },
+  { "id": "prod_003", "name": "Widget C", "price": 50, "currency": "MURALUSD" },
+  { "id": "prod_004", "name": "Micro Widget", "price": 0.0001, "currency": "USDC" }
+]

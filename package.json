@@ -1,0 +1,38 @@
+{
+  "name": "mkt-api",
+  "version": "1.0.0",
+  "description": "Stablecoin marketplace API",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start-server": "ts-node src/server.ts",
+    "preflight": "ts-node scripts/preflight.ts",
+    "checkout": "ts-node scripts/checkout.ts",
+    "mural": "ts-node scripts/mural.ts",
+    "sandbox-local": "ts-node scripts/sandbox-local.ts",
+    "sandbox": "ts-node scripts/sandbox.ts",
+    "github": "ts-node scripts/github.ts",
+    "tree": "ts-node scripts/tree.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "ethers": "^6.16.0",
+    "express": "^5.2.1",
+    "localtunnel": "^2.0.2",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.1",
+    "@types/uuid": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
