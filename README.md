@@ -123,6 +123,15 @@ Customer                    mkt-api                     Mural Pay
    │<── {EXECUTED, COP amount}  │<── live status             │
 ```
 
+
+## PIPELINES
+
+```
+Checkout Pipeline:     validate → lookup account → create order → respond
+Detection Pipeline:    verify signature → dedupe → match → persist
+Conversion Pipeline:   create payout → execute → poll → confirm
+```
+
 ## Architecture
 
 ```
@@ -147,11 +156,11 @@ No classes. Functional modules: `store` (data), `muralClient` (Mural API), route
 
 The webhook matches incoming deposits to pending orders by **exact amount + deposit address**. Known issues:
 
-1. **Ambiguous amounts** — two orders for the same amount to the same deposit address are indistinguishable. First-match wins. Production fix: unique deposit address per order (Mural sub-accounts) or embed order ID in memo field.
-2. **Floating point** — USDC amounts compared with `===`. Edge case: `10.00` vs `10.000000`. Production fix: compare at smallest unit (6 decimals for USDC).
-3. **Single deposit address** — all orders share one Mural wallet. A deposit that doesn't match any order amount is lost revenue. Production fix: per-order deposit addresses.
-4. **Race condition** — if two webhooks fire simultaneously for similar amounts, both could match the same order before either marks it paid. Production fix: database transaction with row-level locking.
-5. **No expiry** — pending orders never expire. Stale orders could accidentally match future deposits. Production fix: TTL on pending orders.
+1. **Ambiguous amounts**: two orders for the same amount to the same deposit address are indistinguishable. First-match wins. Production fix: unique deposit address per order (Mural sub-accounts) or embed order ID in memo field.
+2. **Floating point**: USDC amounts compared with `===`. Edge case: `10.00` vs `10.000000`. Production fix: compare at smallest unit (6 decimals for USDC).
+3. **Single deposit address**: all orders share one Mural wallet. A deposit that doesn't match any order amount is lost revenue. Production fix: per-order deposit addresses.
+4. **Race condition**: if two webhooks fire simultaneously for similar amounts, both could match the same order before either marks it paid. Production fix: database transaction with row-level locking.
+5. **No expiry**: pending orders never expire. Stale orders could accidentally match future deposits. Production fix: TTL on pending orders.
 
 ## Current Status
 
@@ -162,25 +171,49 @@ The webhook matches incoming deposits to pending orders by **exact amount + depo
 - Order status verification (GET /orders, GET /orders/:id)
 - Auto USDC→COP conversion on payment (fires from webhook handler)
 - COP withdrawal status (GET /payouts, GET /payouts/:id)
-- Deployed on Vercel — all endpoints curl-able
+- Deployed on Vercel: all endpoints curl-able
 - OpenAPI spec (openapi.json)
 - Smoke test script (`npm run curl`)
 - End-to-end script with real on-chain USDC + Mural webhooks (`npm run mural-sandbox`)
 
 **Limitations:**
-- In-memory storage — resets on Vercel cold start
+- In-memory storage: resets on Vercel cold start
 - Auto-conversion uses hardcoded Colombian bank details (staging test values)
 - No auth on endpoints
 
-## Future Work
+## Future Work for ```src/v2```
 
-- **PostgreSQL** — persist orders, payout IDs across deploys
-- **Per-order deposit addresses** — eliminate amount-matching ambiguity
-- **Auth middleware** — API key or JWT on merchant endpoints
-- **Order expiry** — TTL on pending orders to prevent stale matches
-- **Retry queue** — if auto-conversion fails, retry with exponential backoff
-- **Webhook signature verification** — validate Mural webhook signatures
-- **Configurable bank details** — merchant sets COP recipient via API
-- **Rate display** — show estimated COP amount at checkout using rates.json
-- **Error handling middleware** — structured error responses
-- **Logging** — structured logs with request IDs
+- **PostgreSQL**: persist orders, payout IDs across deploys
+- **Per-order deposit addresses**: eliminate amount-matching ambiguity
+- **Auth middleware**: API key or JWT on merchant endpoints
+- **Order expiry**: TTL on pending orders to prevent stale matches
+- **Retry queue**: if auto-conversion fails, retry with exponential backoff
+- **Webhook signature verification**: validate Mural webhook signatures
+- **Configurable bank details**: merchant sets COP recipient via API
+- **Rate display**: show estimated COP amount at checkout using rates.json
+- **Error handling middleware**: structured error responses
+- **Logging**: structured logs with request IDs
+
+```
+                         ┌─────────────┐
+  Mural webhook ────────>│  /webhook   │──> mark paid + enqueue
+                         │  (fast, <1s)│
+                         └─────────────┘
+                                │
+                         ┌──────▼──────┐
+                         │  Job Queue  │ 
+                         └──────┬──────┘
+                                │
+                         ┌──────▼──────┐
+                         │  Worker     │──> create payout → execute → poll
+                         │  (retries)  │──> update order.payoutId
+                         └─────────────┘
+```
+---
+- dynamic offchain fallback pipelines
+- dynamic onchain fallback pipelines (gas, USDC, MURALUSD)
+- harden/verify architecture, microservices. isolate concerns ──> orchestrate
+- GET /health smoke 
+- real rates
+- FIX SINGLE DEPOSIT ADDRESS
+- SECURITY 
