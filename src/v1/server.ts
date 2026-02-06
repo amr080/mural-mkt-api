@@ -10,6 +10,7 @@ export function createApp() {
   const app = express()
   app.use(cors())
   app.use(express.json())
+  app.get('/', (_, res) => res.json(require('../../openapi.json')))
   app.use('/health', healthRouter)
 
   // Route groups
