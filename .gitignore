@@ -9,6 +9,7 @@
 !tsconfig.json
 !openapi.json
 !product-catalog.json
+!README.md
 
 # Vercel entry point
 !vercel.json
