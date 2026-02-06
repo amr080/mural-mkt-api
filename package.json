@@ -16,7 +16,8 @@
     "convert": "ts-node scripts/convert.ts",
     "mural-sandbox": "ts-node scripts/mural-sandbox.ts",
     "github": "ts-node scripts/github.ts",
-    "tree": "ts-node scripts/tree.ts"
+    "tree": "ts-node scripts/tree.ts",
+    "curl": "ts-node scripts/curl.ts"
   },
   "keywords": [],
   "author": "",

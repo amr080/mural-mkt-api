@@ -16,6 +16,7 @@ export function createApp() {
   try { app.use('/products', require('./routes/products').default) } catch {}
   try { app.use('/orders', require('./routes/orders').default) } catch {}
   try { app.use('/mural-webhook', require('./routes/muralWebhook').default) } catch {}
+  try { app.use('/payouts', require('./routes/payouts').default) } catch {}
 
   return app
 }

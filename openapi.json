@@ -2,10 +2,11 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Mural Marketplace API",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Backend service powering a USDC marketplace on Polygon via Mural Pay sandbox"
   },
   "servers": [
+    { "url": "https://mural-mkt-api.vercel.app", "description": "Production (Vercel)" },
     { "url": "http://localhost:3003", "description": "Local" }
   ],
   "paths": {
@@ -78,13 +79,34 @@
     "/mural-webhook": {
       "post": {
         "summary": "Mural webhook receiver",
-        "description": "Receives account_credited events from Mural when USDC deposits are detected. Matches payment to pending order by amount + deposit address.",
+        "description": "Receives account_credited events from Mural. Matches payment to pending order by amount + deposit address. Auto-triggers USDC→COP conversion.",
         "requestBody": {
           "required": true,
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MuralWebhookEvent" } } }
         },
         "responses": {
           "200": { "description": "Processed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResult" } } } }
+        }
+      }
+    },
+    "/payouts": {
+      "get": {
+        "summary": "List all COP withdrawals",
+        "description": "Proxies to Mural API. Shows all payout requests and their statuses.",
+        "responses": {
+          "200": { "description": "Payout list" },
+          "502": { "description": "Mural API error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/payouts/{id}": {
+      "get": {
+        "summary": "Get COP withdrawal status",
+        "description": "Proxies to Mural API. Returns live payout status (AWAITING_EXECUTION → PENDING → EXECUTED | FAILED).",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Payout details" },
+          "502": { "description": "Mural API error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
         }
       }
     }
@@ -116,7 +138,8 @@
           "depositAddress": { "type": "string", "description": "Mural wallet address to send USDC to" },
           "txHash": { "type": "string" },
           "paidAt": { "type": "string", "format": "date-time" },
-          "createdAt": { "type": "string", "format": "date-time" }
+          "createdAt": { "type": "string", "format": "date-time" },
+          "payoutId": { "type": "string", "description": "Mural payout ID if COP conversion was triggered" }
         }
       },
       "CreateOrder": {

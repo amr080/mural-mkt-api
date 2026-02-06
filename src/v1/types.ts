@@ -20,6 +20,7 @@ export interface Order {
   createdAt: string
   txHash?: string
   paidAt?: string
+  payoutId?: string
 }
 
 // ---- Mural API Types ----
