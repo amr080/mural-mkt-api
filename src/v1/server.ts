@@ -11,13 +11,18 @@ export function createApp() {
   app.use(cors())
   app.use(express.json())
   app.get('/', (_, res) => res.json(require('../../openapi.json')))
-  app.use('/health', healthRouter)
 
-  // Route groups
-  try { app.use('/products', require('./routes/products').default) } catch (e) { console.error('[mount] products failed:', e) }
-  try { app.use('/orders', require('./routes/orders').default) } catch (e) { console.error('[mount] orders failed:', e) }
-  try { app.use('/mural-webhook', require('./routes/muralWebhook').default) } catch (e) { console.error('[mount] mural-webhook failed:', e) }
-  try { app.use('/payouts', require('./routes/payouts').default) } catch (e) { console.error('[mount] payouts failed:', e) }
+  // Build a router with all API routes
+  const api = express.Router()
+  api.use('/health', healthRouter)
+  try { api.use('/products', require('./routes/products').default) } catch (e) { console.error('[mount] products failed:', e) }
+  try { api.use('/orders', require('./routes/orders').default) } catch (e) { console.error('[mount] orders failed:', e) }
+  try { api.use('/mural-webhook', require('./routes/muralWebhook').default) } catch (e) { console.error('[mount] mural-webhook failed:', e) }
+  try { api.use('/payouts', require('./routes/payouts').default) } catch (e) { console.error('[mount] payouts failed:', e) }
+
+  // Mount at both / (direct/local) and /api (frontend + Vercel rewrite)
+  app.use('/', api)
+  app.use('/api', api)
 
   return app
 }
