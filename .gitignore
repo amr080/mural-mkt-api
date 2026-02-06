@@ -4,22 +4,28 @@
 # Allow .gitignore itself
 !.gitignore
 
-# Allow root config/data files
+# Root config
 !package.json
 !tsconfig.json
 !openapi.json
 !product-catalog.json
 
-# Allow src/v1 health route + dependencies (must unignore each directory level)
-!src/
-!src/v1/
-!src/v1/routes/
-!src/v1/routes/health.ts
-!src/v1/server.ts
-!src/v1/config.ts
-!src/v1/rates.json
-
-# Vercel
+# Vercel entry point
 !vercel.json
 !api/
 !api/index.ts
+
+# src/v1 — must unignore each directory level
+!src/
+!src/v1/
+!src/v1/server.ts
+!src/v1/config.ts
+!src/v1/muralClient.ts
+!src/v1/store.ts
+!src/v1/types.ts
+!src/v1/rates.json
+!src/v1/routes/
+!src/v1/routes/health.ts
+!src/v1/routes/products.ts
+!src/v1/routes/orders.ts
+!src/v1/routes/muralWebhook.ts
