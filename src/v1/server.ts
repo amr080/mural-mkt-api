@@ -12,11 +12,11 @@ export function createApp() {
   app.use(express.json())
   app.use('/health', healthRouter)
 
-  // Optional routes — loaded only if present
-  try { app.use('/products', require('./routes/products').default) } catch {}
-  try { app.use('/orders', require('./routes/orders').default) } catch {}
-  try { app.use('/mural-webhook', require('./routes/muralWebhook').default) } catch {}
-  try { app.use('/payouts', require('./routes/payouts').default) } catch {}
+  // Route groups
+  try { app.use('/products', require('./routes/products').default) } catch (e) { console.error('[mount] products failed:', e) }
+  try { app.use('/orders', require('./routes/orders').default) } catch (e) { console.error('[mount] orders failed:', e) }
+  try { app.use('/mural-webhook', require('./routes/muralWebhook').default) } catch (e) { console.error('[mount] mural-webhook failed:', e) }
+  try { app.use('/payouts', require('./routes/payouts').default) } catch (e) { console.error('[mount] payouts failed:', e) }
 
   return app
 }

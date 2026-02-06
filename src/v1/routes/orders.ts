@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { store } from '../store'
 import { muralClient } from '../muralClient'
 import { Order } from '../types'
@@ -43,7 +43,7 @@ router.post('/', async (req: Request, res: Response) => {
   const depositAddress = await getDepositAddress()
 
   const order: Order = {
-    id: `ord_${uuidv4()}`,
+    id: `ord_${randomUUID()}`,
     productId,
     quantity,
     total: product.price * quantity,
