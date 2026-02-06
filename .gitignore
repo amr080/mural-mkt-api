@@ -1,44 +1,22 @@
-# deps / runtime
-node_modules/
-.vercel/
-dist/
-build/
-.cache/
-.tmp/
-coverage/
+# ignore everything by default
+*
 
-# env
-.env
-.env.*
+# allow git metadata
+!.gitignore
 
-# os / logs
-.DS_Store
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# editor / ai
-.cursor/
-
-# docs
-docs/
-
-# scripts
-scripts/
-
-# ignore ALL src by default
-src/*
-
-# allow ONLY v1 api
-# !src/v1/
-# !src/v1/**
-
-# allow root config + artifacts
+# allow root config / artifacts
 !package.json
 !tsconfig.json
 !openapi.json
 !product-catalog.json
+!rates.json
 
-README.md
-README.MD
+# GET /health
+!src/
+src/*
+!src/v1/
+src/v1/*
+!src/v1/server.ts
+!src/v1/routes/
+src/v1/routes/*
+!src/v1/routes/health.ts

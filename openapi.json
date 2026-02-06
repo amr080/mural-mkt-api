@@ -1,147 +1,90 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Stablecoin Marketplace API",
-    "version": "1.0.0"
+    "title": "Mural Marketplace API",
+    "version": "1.1.0",
+    "description": "Backend service powering a USDC marketplace on Polygon via Mural Pay sandbox"
   },
+  "servers": [
+    { "url": "http://localhost:3003", "description": "Local" }
+  ],
   "paths": {
     "/health": {
       "get": {
-        "summary": "Service status",
+        "summary": "Health check",
         "responses": {
           "200": {
             "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Health" }
-              }
-            }
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } }
           }
         }
       }
     },
     "/products": {
       "get": {
-        "summary": "List products",
+        "summary": "List product catalog",
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Product" }
-                }
-              }
-            }
+            "description": "Product list",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Product" } } } }
           }
         }
       }
     },
     "/products/{id}": {
       "get": {
-        "summary": "Get product",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
+        "summary": "Get product by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Product" }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
-              }
-            }
-          }
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Product" } } } },
+          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
         }
       }
     },
     "/orders": {
       "get": {
-        "summary": "List orders",
+        "summary": "List all orders (merchant view)",
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Order" }
-                }
-              }
-            }
+            "description": "Order list",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Order" } } } }
           }
         }
       },
       "post": {
-        "summary": "Create order",
+        "summary": "Create checkout order",
+        "description": "Returns a pending order with Mural deposit address. Customer sends USDC to this address externally.",
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateOrder" }
-            }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateOrder" } } }
         },
         "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Order" }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
-              }
-            }
-          },
-          "404": {
-            "description": "Product not found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
-              }
-            }
-          }
+          "201": { "description": "Order created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Order" } } } },
+          "400": { "description": "Missing fields", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "404": { "description": "Product not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
         }
       }
     },
     "/orders/{id}": {
       "get": {
-        "summary": "Get order",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
+        "summary": "Get order status (merchant checks payment here)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Order" }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
-              }
-            }
-          }
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Order" } } } },
+          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/mural-webhook": {
+      "post": {
+        "summary": "Mural webhook receiver",
+        "description": "Receives account_credited events from Mural when USDC deposits are detected. Matches payment to pending order by amount + deposit address.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MuralWebhookEvent" } } }
+        },
+        "responses": {
+          "200": { "description": "Processed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResult" } } } }
         }
       }
     }
@@ -150,9 +93,7 @@
     "schemas": {
       "Health": {
         "type": "object",
-        "properties": {
-          "status": { "type": "string", "enum": ["ok"] }
-        }
+        "properties": { "status": { "type": "string", "enum": ["ok"] } }
       },
       "Product": {
         "type": "object",
@@ -170,9 +111,11 @@
           "productId": { "type": "string" },
           "quantity": { "type": "integer" },
           "total": { "type": "number" },
-          "status": { "type": "string", "enum": ["pending", "paid", "failed"] },
+          "status": { "type": "string", "enum": ["pending", "paid", "expired"] },
           "customerWallet": { "type": "string" },
-          "merchantWallet": { "type": "string" },
+          "depositAddress": { "type": "string", "description": "Mural wallet address to send USDC to" },
+          "txHash": { "type": "string" },
+          "paidAt": { "type": "string", "format": "date-time" },
           "createdAt": { "type": "string", "format": "date-time" }
         }
       },
@@ -181,15 +124,49 @@
         "required": ["productId", "quantity", "customerWallet"],
         "properties": {
           "productId": { "type": "string" },
-          "quantity": { "type": "integer" },
+          "quantity": { "type": "integer", "minimum": 1 },
           "customerWallet": { "type": "string" }
+        }
+      },
+      "MuralWebhookEvent": {
+        "type": "object",
+        "description": "Mural account_credited webhook payload",
+        "properties": {
+          "type": { "type": "string", "enum": ["account_credited"] },
+          "accountId": { "type": "string" },
+          "accountWalletAddress": { "type": "string" },
+          "tokenAmount": {
+            "type": "object",
+            "properties": {
+              "blockchain": { "type": "string" },
+              "tokenAmount": { "type": "number" },
+              "tokenSymbol": { "type": "string" },
+              "tokenContractAddress": { "type": "string" }
+            }
+          },
+          "transactionDetails": {
+            "type": "object",
+            "properties": {
+              "transactionHash": { "type": "string" },
+              "transactionDate": { "type": "string", "format": "date-time" },
+              "sourceWalletAddress": { "type": "string" },
+              "destinationWalletAddress": { "type": "string" }
+            }
+          }
+        }
+      },
+      "WebhookResult": {
+        "type": "object",
+        "properties": {
+          "received": { "type": "boolean" },
+          "matched": { "type": "boolean" },
+          "orderId": { "type": "string" },
+          "reason": { "type": "string" }
         }
       },
       "Error": {
         "type": "object",
-        "properties": {
-          "error": { "type": "string" }
-        }
+        "properties": { "error": { "type": "string" } }
       }
     }
   }
