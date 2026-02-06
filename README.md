@@ -23,17 +23,19 @@ MURAL_BASE_URL=https://api-staging.muralpay.com
 
 ## Endpoints
 
+All API endpoints are served under the `/api` prefix. The root `/` serves the frontend SPA.
+
 | # | Method | Path | Purpose |
 |---|--------|------|---------|
-| 1 | GET | `/health` | Health check |
-| 2 | GET | `/products` | Product catalog |
-| 3 | GET | `/products/:id` | Single product |
-| 4 | POST | `/orders` | Create checkout order |
-| 5 | GET | `/orders` | List all orders (merchant) |
-| 6 | GET | `/orders/:id` | Order status + payment proof |
-| 7 | POST | `/mural-webhook` | Receive Mural payment events, auto-convert to COP |
-| 8 | GET | `/payouts` | List COP withdrawals (merchant) |
-| 9 | GET | `/payouts/:id` | COP withdrawal status |
+| 1 | GET | `/api/health` | Health check |
+| 2 | GET | `/api/products` | Product catalog |
+| 3 | GET | `/api/products/:id` | Single product |
+| 4 | POST | `/api/orders` | Create checkout order |
+| 5 | GET | `/api/orders` | List all orders (merchant) |
+| 6 | GET | `/api/orders/:id` | Order status + payment proof |
+| 7 | POST | `/api/mural-webhook` | Receive Mural payment events, auto-convert to COP |
+| 8 | GET | `/api/payouts` | List COP withdrawals (merchant) |
+| 9 | GET | `/api/payouts/:id` | COP withdrawal status |
 
 ## Smoke Test
 
@@ -46,42 +48,42 @@ Runs every endpoint in sequence. Maps to challenge requirements:
 
 | Challenge Requirement | Smoke Test Proof |
 |---|---|
-| Display product catalog | `GET /products` → 4 USDC-priced items |
-| Shop for items | `GET /products/:id` → single product |
-| Checkout in USDC (Polygon) | `POST /orders` → pending order with Mural deposit address. Customer sends USDC on-chain to that address (outside app). |
-| Detect payment received | `POST /mural-webhook` → `matched=true`. Matches by amount + deposit address. |
-| Display payment status | `GET /orders/:id` → `status=paid`, `txHash`, `paidAt` |
+| Display product catalog | `GET /api/products` → 4 USDC-priced items |
+| Shop for items | `GET /api/products/:id` → single product |
+| Checkout in USDC (Polygon) | `POST /api/orders` → pending order with Mural deposit address. Customer sends USDC on-chain to that address (outside app). |
+| Detect payment received | `POST /api/mural-webhook` → `matched=true`. Matches by amount + deposit address. |
+| Display payment status | `GET /api/orders/:id` → `status=paid`, `txHash`, `paidAt` |
 | Auto-convert USDC→COP | Webhook handler calls Mural Payout API (create + execute). `payoutId` stored on order. |
-| See withdrawal status | `GET /payouts` → list all COP withdrawals. `GET /payouts/:id` → live payout status from Mural. |
+| See withdrawal status | `GET /api/payouts` → list all COP withdrawals. `GET /api/payouts/:id` → live payout status from Mural. |
 
 ## cURL Walkthrough
 
 **1. Browse catalog**
 ```bash
-curl https://mural-mkt-api.vercel.app/products
+curl https://mural-mkt-api.vercel.app/api/products
 ```
 
 **2. Checkout**
 ```bash
-curl -X POST https://mural-mkt-api.vercel.app/orders -H "Content-Type: application/json" -d "{\"productId\":\"prod_001\",\"quantity\":1,\"customerWallet\":\"0xCUST\"}"
+curl -X POST https://mural-mkt-api.vercel.app/api/orders -H "Content-Type: application/json" -d "{\"productId\":\"prod_001\",\"quantity\":1,\"customerWallet\":\"0xCUST\"}"
 ```
 Returns `{id, status:"pending", depositAddress, total}`. Customer sends `total` USDC to `depositAddress` on Polygon (outside the app).
 
 **3. Mural detects payment → webhook**
 ```bash
-curl -X POST https://mural-mkt-api.vercel.app/mural-webhook -H "Content-Type: application/json" -d "{\"type\":\"account_credited\",\"accountId\":\"test\",\"organizationId\":\"test\",\"transactionId\":\"test-001\",\"accountWalletAddress\":\"DEPOSIT_ADDRESS_HERE\",\"tokenAmount\":{\"blockchain\":\"POLYGON\",\"tokenAmount\":10,\"tokenSymbol\":\"USDC\",\"tokenContractAddress\":\"0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582\"},\"transactionDetails\":{\"blockchain\":\"POLYGON\",\"transactionDate\":\"2026-02-06T00:00:00Z\",\"transactionHash\":\"0xabc123\",\"sourceWalletAddress\":\"0xCUST\",\"destinationWalletAddress\":\"DEPOSIT_ADDRESS_HERE\"}}"
+curl -X POST https://mural-mkt-api.vercel.app/api/mural-webhook -H "Content-Type: application/json" -d "{\"type\":\"account_credited\",\"accountId\":\"test\",\"organizationId\":\"test\",\"transactionId\":\"test-001\",\"accountWalletAddress\":\"DEPOSIT_ADDRESS_HERE\",\"tokenAmount\":{\"blockchain\":\"POLYGON\",\"tokenAmount\":10,\"tokenSymbol\":\"USDC\",\"tokenContractAddress\":\"0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582\"},\"transactionDetails\":{\"blockchain\":\"POLYGON\",\"transactionDate\":\"2026-02-06T00:00:00Z\",\"transactionHash\":\"0xabc123\",\"sourceWalletAddress\":\"0xCUST\",\"destinationWalletAddress\":\"DEPOSIT_ADDRESS_HERE\"}}"
 ```
 Matches by `tokenAmount` + `depositAddress`. Marks order `paid`. Auto-triggers USDC→COP payout via Mural.
 
 **4. Verify payment**
 ```bash
-curl https://mural-mkt-api.vercel.app/orders/ORDER_ID
+curl https://mural-mkt-api.vercel.app/api/orders/ORDER_ID
 ```
 
 **5. Check COP withdrawal status**
 ```bash
-curl https://mural-mkt-api.vercel.app/payouts
-curl https://mural-mkt-api.vercel.app/payouts/PAYOUT_ID
+curl https://mural-mkt-api.vercel.app/api/payouts
+curl https://mural-mkt-api.vercel.app/api/payouts/PAYOUT_ID
 ```
 
 ## Flow of Funds
@@ -100,26 +102,26 @@ Colombian Bank Account (Bancolombia)
 ## Data Flow
 
 ```
-Customer                    mkt-api                     Mural Pay
+Customer / Frontend         mkt-api                     Mural Pay
    │                            │                            │
-   │── GET /products ──────────>│                            │
+   │── GET /api/products ──────>│                            │
    │<── catalog                 │                            │
    │                            │                            │
-   │── POST /orders ──────────>│── GET /api/accounts ──────>│
+   │── POST /api/orders ──────>│── GET /api/accounts ──────>│
    │<── {pending, depositAddr}  │<── {walletAddress}         │
    │                            │                            │
    │── USDC.transfer ──────────────────(on-chain)───────────>│
    │                            │                            │
-   │                            │<── POST /mural-webhook ────│
+   │                            │<── POST /api/mural-webhook │
    │                            │    match order → paid      │
    │                            │── POST /payouts/payout ───>│  create COP payout
    │                            │── POST /payouts/.../exec ─>│  execute
    │                            │── GET  /payouts/... ──────>│  poll status
    │                            │                            │
-   │── GET /orders/:id ────────>│                            │
+   │── GET /api/orders/:id ────>│                            │
    │<── {paid, txHash, payoutId}│                            │
    │                            │                            │
-   │── GET /payouts/:id ──────>│── GET /payouts/payout/:id >│
+   │── GET /api/payouts/:id ──>│── GET /payouts/payout/:id >│
    │<── {EXECUTED, COP amount}  │<── live status             │
 ```
 
@@ -136,7 +138,7 @@ Conversion Pipeline:   create payout → execute → poll → confirm
 
 ```
 src/v1/
-├── server.ts         Express app, mounts routes
+├── server.ts         Express app, mounts routes at / and /api
 ├── config.ts         ENV lazy getters
 ├── muralClient.ts    Mural API wrapper (accounts, webhooks, payouts)
 ├── store.ts          In-memory Maps (products, orders, processed txs)
@@ -144,13 +146,18 @@ src/v1/
 ├── rates.json        Static USDC/COP rate
 └── routes/
     ├── health.ts
-    ├── products.ts       GET /products, GET /products/:id
-    ├── orders.ts         POST /orders, GET /orders, GET /orders/:id
-    ├── muralWebhook.ts   POST /mural-webhook + auto USDC→COP conversion
-    └── payouts.ts        GET /payouts, GET /payouts/:id (proxies Mural)
+    ├── products.ts       GET /api/products, GET /api/products/:id
+    ├── orders.ts         POST /api/orders, GET /api/orders, GET /api/orders/:id
+    ├── muralWebhook.ts   POST /api/mural-webhook + auto USDC→COP conversion
+    └── payouts.ts        GET /api/payouts, GET /api/payouts/:id (proxies Mural)
+
+web/                      Frontend SPA (see web/FRONTEND.md)
+├── src/pages/            Products, Checkout, OrderStatus, Merchant
+├── src/api/client.ts     Fetch wrapper → /api/*
+└── src/__tests__/        Vitest + RTL + MSW (20 tests)
 ```
 
-No classes. Functional modules: `store` (data), `muralClient` (Mural API), route files (handlers).
+No classes. Functional modules: `store` (data), `muralClient` (Mural API), route files (handlers). Routes mounted at both `/` and `/api` for backward compat.
 
 ## Deposit Matching Pitfalls
 
@@ -165,15 +172,17 @@ The webhook matches incoming deposits to pending orders by **exact amount + depo
 ## Current Status
 
 **Working:**
-- Product catalog (GET /products, GET /products/:id)
-- Order creation with Mural deposit address (POST /orders)
-- Webhook payment detection with idempotency (POST /mural-webhook)
-- Order status verification (GET /orders, GET /orders/:id)
+- Frontend SPA (Products, Checkout, Order Status, Merchant dashboard)
+- Product catalog (GET /api/products, GET /api/products/:id)
+- Order creation with Mural deposit address (POST /api/orders)
+- Webhook payment detection with idempotency (POST /api/mural-webhook)
+- Order status verification (GET /api/orders, GET /api/orders/:id)
 - Auto USDC→COP conversion on payment (fires from webhook handler)
-- COP withdrawal status (GET /payouts, GET /payouts/:id)
-- Deployed on Vercel: all endpoints curl-able
+- COP withdrawal status (GET /api/payouts, GET /api/payouts/:id)
+- Deployed on Vercel: frontend at `/`, API at `/api/*`
 - OpenAPI spec (openapi.json)
 - Smoke test script (`npm run curl`)
+- Frontend tests (`cd web && npm test` — 20 tests)
 - End-to-end script with real on-chain USDC + Mural webhooks (`npm run mural-sandbox`)
 
 **Limitations:**
