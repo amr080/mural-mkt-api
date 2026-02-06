@@ -42,7 +42,17 @@ npm run curl                                        # against Vercel
 CURL_BASE_URL=http://localhost:3003 npm run curl    # against local
 ```
 
-Runs every endpoint in sequence: browse catalog → checkout → simulate payment → verify paid → check withdrawals.
+Runs every endpoint in sequence. Maps to challenge requirements:
+
+| Challenge Requirement | Smoke Test Proof |
+|---|---|
+| Display product catalog | `GET /products` → 4 USDC-priced items |
+| Shop for items | `GET /products/:id` → single product |
+| Checkout in USDC (Polygon) | `POST /orders` → pending order with Mural deposit address. Customer sends USDC on-chain to that address (outside app). |
+| Detect payment received | `POST /mural-webhook` → `matched=true`. Matches by amount + deposit address. |
+| Display payment status | `GET /orders/:id` → `status=paid`, `txHash`, `paidAt` |
+| Auto-convert USDC→COP | Webhook handler calls Mural Payout API (create + execute). `payoutId` stored on order. |
+| See withdrawal status | `GET /payouts` → list all COP withdrawals. `GET /payouts/:id` → live payout status from Mural. |
 
 ## cURL Walkthrough
 
