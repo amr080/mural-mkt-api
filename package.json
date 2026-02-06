@@ -14,6 +14,7 @@
     "sandbox-local": "ts-node scripts/sandbox-local.ts",
     "sandbox": "ts-node scripts/sandbox.ts",
     "convert": "ts-node scripts/convert.ts",
+    "mural-sandbox": "ts-node scripts/mural-sandbox.ts",
     "github": "ts-node scripts/github.ts",
     "tree": "ts-node scripts/tree.ts"
   },

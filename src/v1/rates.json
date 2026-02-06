@@ -1,0 +1,10 @@
+{
+  "USDC_COP": {
+    "rate": 3490.00,
+    "source": "USDC",
+    "destination": "COP",
+    "decimals": 2,
+    "updatedAt": "2026-02-06",
+    "note": "Approximate. Mural applies live rate at execution (~3489.71 as of 2026-02-06)"
+  }
+}

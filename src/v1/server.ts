@@ -3,9 +3,6 @@ import cors from 'cors'
 import http from 'http'
 import { ENV } from './config'
 import healthRouter from './routes/health'
-import productsRouter from './routes/products'
-import ordersRouter from './routes/orders'
-import webhookRouter from './routes/muralWebhook'
 
 let server: http.Server | null = null
 
@@ -14,9 +11,12 @@ export function createApp() {
   app.use(cors())
   app.use(express.json())
   app.use('/health', healthRouter)
-  app.use('/products', productsRouter)
-  app.use('/orders', ordersRouter)
-  app.use('/mural-webhook', webhookRouter)
+
+  // Optional routes — loaded only if present
+  try { app.use('/products', require('./routes/products').default) } catch {}
+  try { app.use('/orders', require('./routes/orders').default) } catch {}
+  try { app.use('/mural-webhook', require('./routes/muralWebhook').default) } catch {}
+
   return app
 }
 
@@ -36,4 +36,8 @@ export function stopServer(): Promise<void> {
     if (server) server.close(() => resolve())
     else resolve()
   })
+}
+
+if (require.main === module) {
+  startServer()
 }
