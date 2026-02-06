@@ -1,12 +1,8 @@
-import express from "express";
-import cors from "cors";
-import healthRouter from "../src/routes/health";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-app.use("/health", healthRouter);
-
-export default app;
+export default function handler(
+  _req: VercelRequest,
+  res: VercelResponse
+) {
+  res.status(200).json({ status: "ok" });
+}
