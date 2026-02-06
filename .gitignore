@@ -20,3 +20,5 @@ src/v1/*
 !src/v1/routes/
 src/v1/routes/*
 !src/v1/routes/health.ts
+!src/api/
+!src/api/**
