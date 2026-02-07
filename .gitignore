@@ -33,6 +33,13 @@
 !src/v1/routes/muralWebhook.ts
 !src/v1/routes/payouts.ts
 
+# src/v2
+!src/v2/
+!src/v2/**
+
+
+
+
 # Frontend
 !web/
 !web/package.json
