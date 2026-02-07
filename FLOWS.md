@@ -1,3 +1,8 @@
+### FLOWS 
+
+- PAYOUT = OFFRAMP = CONVERT = REDEEM 
+
+---
 
 <details>
 <summary>USDC CHECKOUT + AUTOCONVERT</summary>
@@ -190,7 +195,16 @@ recipient: Test Merchant, Bogota, CO
 </details>
 
 
+<details>
+<summary>API FLOWS</summary>
 
+1. USDC CHECKOUT + PAYOUT
+2. USDC CHECKOUT + NO PAYOUT
+3. MURALUSD CHECKOUT + PAYOUT
+4. MURALUSD CHECKOUT + NO PAYOUT
+
+
+</details>
 
 
 
