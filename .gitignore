@@ -43,6 +43,6 @@
 !web/src/
 !web/src/**
 
-
 # ABI
 !abi/
+!abi/**
