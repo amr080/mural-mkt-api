@@ -19,7 +19,8 @@
     "tree": "ts-node scripts/tree.ts",
     "curl": "ts-node scripts/curl.ts",
     "muralusd": "ts-node scripts/muralusd.ts",
-    "usdc-v2": "ts-node scripts/usdc-v2.ts"
+    "usdc-v2": "ts-node scripts/usdc-v2.ts",
+    "usdc-cvt": "ts-node scripts/usdc-cvt.ts"
   },
   "keywords": [],
   "author": "",
