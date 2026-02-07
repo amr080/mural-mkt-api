@@ -10,6 +10,7 @@
 !openapi.json
 !product-catalog.json
 !README.md
+!FLOWS.md
 
 # Vercel entry point
 !vercel.json
