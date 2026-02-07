@@ -137,3 +137,63 @@ GET /addresses              contract + wallet addresses
 4. poll order status via GET /orders/:id 
 
 </details>
+
+<details>
+<summary>USDC CHECKOUT + PAYOUT</summary>
+
+1. Get Mural account wallet address
+2. Register webhook for deposit notifications
+3. Customer sends 2 USDC to Mural wallet
+4. Mural detects deposit, sends account_credited webhook
+5. Detection service matches payment to order
+6. Order marked paid
+7. AutoConvert creates payout (2 USDC → COP)
+8. Mural executes payout
+9. Payout status: PENDING → EXECUTED
+10. COP sent to merchant bank account
+
+</details>
+
+
+
+<details>
+<summary>PAYOUT API SEQUENCE</summary>
+
+1. POST /api/payouts/payout: create payout with sourceAccountId, amount, bank details
+2. POST /api/payouts/payout/:id/execute: execute with transfer-api-key header
+3. GET /api/payouts/payout/:id: poll until EXECUTED
+
+</details>
+
+<details>
+<summary>PAYOUT REQUEST DATA</summary>
+
+```
+sourceAccountId: 13c0bfd0-98ba-4f3c-b845-64efcbf65e6c
+amount: 2 USDC
+destination: Bancolombia SAVINGS account (COP)
+recipient: Test Merchant, Bogota, CO
+```
+
+</details>
+
+
+<details>
+<summary>USDC CHECKOUT + COP PAYOUT FLOW OF FUNDS</summary>
+
+1. Customer USDC → Mural wallet
+2. Mural holds USDC in custody
+3. Mural redeems USDC for USD
+4. Mural converts USD to COP
+5. Mural wires COP to merchant bank account
+
+</details>
+
+
+
+
+
+
+
+
+
